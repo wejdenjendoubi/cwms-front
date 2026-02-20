@@ -1,10 +1,13 @@
-// Angular Import
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 // project import
 import { AdminComponent } from './theme/layout/admin/admin.component';
 import { GuestComponent } from './theme/layout/guest/guest.component';
+
+// Vérifie bien que le chemin ./pages/auth/signin/signin est correct (sans .ts)
+import { SignInComponent } from './pages/auth/signin/signin';
+import { SignUpComponent } from './pages/auth/signup/signup';
 
 const routes: Routes = [
   {
@@ -13,36 +16,12 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/analytics',
+        redirectTo: '/dashboard-v1',
         pathMatch: 'full'
       },
       {
         path: 'dashboard-v1',
         loadComponent: () => import('./pages/dashboard-v1/dashboard-v1').then((c) => c.DashboardV1Component)
-      },
-      {
-        path: 'analytics',
-        loadComponent: () => import('./demo/dashboard/dash-analytics.component').then((c) => c.DashAnalyticsComponent)
-      },
-      {
-        path: 'component',
-        loadChildren: () => import('./demo/ui-element/ui-basic.module').then((m) => m.UiBasicModule)
-      },
-      {
-        path: 'chart',
-        loadComponent: () => import('./demo/chart-maps/core-apex.component').then((c) => c.CoreApexComponent)
-      },
-      {
-        path: 'forms',
-        loadComponent: () => import('./demo/forms/form-elements/form-elements.component').then((c) => c.FormElementsComponent)
-      },
-      {
-        path: 'tables',
-        loadComponent: () => import('./demo/tables/tbl-bootstrap/tbl-bootstrap.component').then((c) => c.TblBootstrapComponent)
-      },
-      {
-        path: 'sample-page',
-        loadComponent: () => import('./demo/other/sample-page/sample-page.component').then((c) => c.SamplePageComponent)
       }
     ]
   },
@@ -51,14 +30,18 @@ const routes: Routes = [
     component: GuestComponent,
     children: [
       {
-        path: 'register',
-        loadComponent: () => import('./demo/pages/authentication/sign-up/sign-up.component').then((c) => c.SignUpComponent)
+        path: 'login',
+        component: SignInComponent
       },
       {
-        path: 'login',
-        loadComponent: () => import('./demo/pages/authentication/sign-in/sign-in.component').then((c) => c.SignInComponent)
+        path: 'register',
+        component: SignUpComponent
       }
     ]
+  },
+  {
+    path: '**',
+    redirectTo: '/dashboard-v1'
   }
 ];
 

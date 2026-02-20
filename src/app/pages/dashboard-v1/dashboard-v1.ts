@@ -115,10 +115,30 @@ export class DashboardV1Component {
   }
 
   cards = [
-    { background: 'bg-c-blue', title: 'Orders Received', icon: 'icon-shopping-cart', text: 'Completed Orders', number: '486', no: '351' },
+    /*{ background: 'bg-c-blue', title: 'Orders Received', icon: 'icon-shopping-cart', text: 'Completed Orders', number: '486', no: '351' },
     { background: 'bg-c-green', title: 'Total Sales', icon: 'icon-tag', text: 'This Month', number: '1641', no: '213' },
     { background: 'bg-c-yellow', title: 'Revenue', icon: 'icon-repeat', text: 'This Month', number: '$42,56', no: '$5,032' },
+
     { background: 'bg-c-red', title: 'Total Profit', icon: 'icon-shopping-cart', text: 'This Month', number: '$9,562', no: '$542' }
+
+    */
+
+    {
+      background: 'bg-c-blue',
+      title: 'Total Users',
+      icon: 'icon-users',     // Icône de groupe d'utilisateurs
+      text: 'Utilisateurs actifs',
+      number: '120',          // Tu pourras changer ce chiffre plus tard
+      no: '10'
+    },
+    {
+      background: 'bg-c-green',
+      title: 'Total Roles',
+      icon: 'icon-shield',    // Icône de bouclier pour les rôles/sécurité
+      text: 'Rôles définis',
+      number: '5',
+      no: '2'
+    }
   ];
 
   images = [

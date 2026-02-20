@@ -8,36 +8,38 @@ import { email, Field, form, minLength, required } from '@angular/forms/signals'
 import { SharedModule } from 'src/app/theme/shared/shared.module';
 
 @Component({
-  selector: 'app-sign-in',
+  selector: 'app-sign-up',
   imports: [CommonModule, RouterModule, SharedModule, Field],
-  templateUrl: './sign-in.component.html',
-  styleUrls: ['./sign-in.component.scss']
+  templateUrl: './signup.html',
+  styleUrls: ['./signup.scss']
 })
-export class SignInComponent {
+export class SignUpComponent {
   private cd = inject(ChangeDetectorRef);
 
   submitted = signal(false);
   error = signal('');
   showPassword = signal(false);
 
-  loginModal = signal<{ email: string; password: string }>({
+  registerModel = signal<{ email: string; password: string; username: string }>({
     email: '',
-    password: ''
+    password: '',
+    username: ''
   });
 
-  loginForm = form(this.loginModal, (schemaPath) => {
+  registerForm = form(this.registerModel, (schemaPath) => {
     required(schemaPath.email, { message: 'Email is required' });
     email(schemaPath.email, { message: 'Enter a valid email address' });
     required(schemaPath.password, { message: 'Password is required' });
     minLength(schemaPath.password, 8, { message: 'Password must be at least 8 characters' });
+    required(schemaPath.username, { message: 'Username is required' });
   });
 
   onSubmit(event: Event) {
     this.submitted.set(true);
     this.error.set('');
     event.preventDefault();
-    const credentials = this.loginModal();
-    console.log('login user logged in with:', credentials);
+    const credentials = this.registerModel();
+    console.log('register user logged in with:', credentials);
     this.cd.detectChanges();
   }
 
