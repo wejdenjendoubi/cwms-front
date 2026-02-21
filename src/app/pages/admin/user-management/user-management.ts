@@ -21,11 +21,12 @@ export class UserManagement implements OnInit {
   isLoading = signal(false);
 
   newUser = signal<UserDTO>({
-    userName: '',
-    email: '',
-    firstName: '',
-    lastName: '',
-    roleName: ''
+  userName: '',
+  email: '',
+  firstName: '',
+  lastName: '',
+  roleName: '',
+  authorities:[]
   });
 
   ngOnInit(): void {
@@ -58,6 +59,12 @@ export class UserManagement implements OnInit {
 
   resetForm() {
     this.step.set(1);
-    this.newUser.set({ userName: '', email: '', firstName: '', lastName: '', roleName: '' });
-  }
-}
+    this.newUser.set({
+  userName: '',
+  email: '',
+  firstName: '',
+  lastName: '',
+  roleName: '',
+  authorities: []
+  })
+}}

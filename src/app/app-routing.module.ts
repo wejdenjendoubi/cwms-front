@@ -1,20 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-// project import
 import { AdminComponent } from './theme/layout/admin/admin.component';
 import { GuestComponent } from './theme/layout/guest/guest.component';
 import { SignInComponent } from './pages/auth/signin/signin';
 import { UserManagement } from './pages/admin/user-management/user-management';
+import { AuthGuard } from './guards/auth-guard';
 
 const routes: Routes = [
-  // 1. Redirection de la racine vers /login
-  {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
-  },
-  // 2. Pages "GUEST" (Login sans sidebar)
+  // 1. Routes publiques (Sans Guard)
   {
     path: '',
     component: GuestComponent,
@@ -22,13 +16,20 @@ const routes: Routes = [
       {
         path: 'login',
         component: SignInComponent
+      },
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
       }
     ]
   },
-  // 3. Pages "ADMIN" (Dashboard avec sidebar)
+
+  // 2. Routes privées (Avec Guard)
   {
     path: '',
     component: AdminComponent,
+    canActivate: [AuthGuard], // Le guard ne s'applique qu'ici
     children: [
       {
         path: 'dashboard-v1',
@@ -36,12 +37,13 @@ const routes: Routes = [
       },
       {
         path: 'user-management',
-        component: UserManagement
+        component: UserManagement,
+        data: { roles: ['ROLE_ADMIN'] }
       }
-
     ]
   },
-  // 4. Sécurité : Tout le reste va au login
+
+  // 3. Fallback
   {
     path: '**',
     redirectTo: 'login'

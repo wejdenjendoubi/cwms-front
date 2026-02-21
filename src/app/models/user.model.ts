@@ -13,4 +13,5 @@ export interface UserDTO {
   roleName: string;
   siteName?: string;
   isActive?: number;
+  authorities: string[];
 }
