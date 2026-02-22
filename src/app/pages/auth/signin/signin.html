@@ -15,6 +15,13 @@
 
               <h4 class="mb-3 f-w-400">Signin</h4>
 
+              @if (error()) {
+                <div class="alert alert-danger border-0 shadow-sm mb-4 text-start" role="alert">
+                  <i class="feather icon-alert-circle me-2"></i>
+                  {{ error() }}
+                </div>
+              }
+
               <div class="input-group mb-3">
                 <input
                   type="text"
@@ -30,7 +37,7 @@
                   [type]="showPassword() ? 'text' : 'password'"
                   class="form-control"
                   [class.is-invalid]="submitted() && loginForm.password().invalid()"
-                  placeholder="Password (min. 8 characters)"
+                  placeholder="Password"
                   [field]="loginForm.password"
                 />
               </div>

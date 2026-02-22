@@ -1,16 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
+import { Router } from '@angular/router';
 
+// Interfaces pour supprimer le "any"
 export interface UserDTO {
-  userId?: number;
   userName: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  roleName: string;
   authorities: string[];
   token?: string;
 }
@@ -18,12 +15,13 @@ export interface UserDTO {
 interface JwtPayload {
   sub: string;
   authorities: string[];
-  [key: string]: unknown; // On remplace 'any' par 'unknown' ici
+  exp?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly currentUserSubject = new BehaviorSubject<UserDTO | null>(null);
   public readonly currentUser$ = this.currentUserSubject.asObservable();
   private readonly API_URL = 'http://localhost:8080/api/auth';
@@ -39,29 +37,35 @@ export class AuthService {
     }
   }
 
+  // Suppression du "any" ici (Correction image_2e1dca.png)
   login(credentials: Record<string, string>): Observable<UserDTO> {
-    return this.http.post<UserDTO>(`${this.API_URL}/login`, credentials).pipe(
-      map((user: UserDTO) => {
-        if (user && user.token) {
-          localStorage.setItem('token', user.token);
-          this.currentUserSubject.next(this.decodeToken(user.token));
+    return this.http.post<UserDTO>(`${this.API_URL}/signin`, credentials).pipe(
+      tap((response) => {
+        if (response && response.token) {
+          const user = this.decodeToken(response.token);
+
+          // Blocage immédiat si l'utilisateur n'a pas de rôles en base
+          if (!user.authorities || user.authorities.length === 0) {
+            this.logout();
+            throw new Error("Compte non autorisé : aucun rôle assigné.");
+          }
+
+          localStorage.setItem('token', response.token);
+          this.currentUserSubject.next(user);
         }
-        return user;
       }),
-      catchError((err: unknown) => throwError(() => err))
+      catchError((err) => throwError(() => err))
     );
   }
 
   private decodeToken(token: string): UserDTO {
+    // Utilisation de l'interface au lieu de any (Correction image_058af2.png)
     const decoded = jwtDecode<JwtPayload>(token);
+    const roles = Array.isArray(decoded.authorities) ? decoded.authorities : [];
 
     return {
       userName: decoded.sub || '',
-      authorities: decoded.authorities || [],
-      email: typeof decoded['email'] === 'string' ? decoded['email'] : '',
-      firstName: typeof decoded['firstName'] === 'string' ? decoded['firstName'] : '',
-      lastName: typeof decoded['lastName'] === 'string' ? decoded['lastName'] : '',
-      roleName: typeof decoded['roleName'] === 'string' ? decoded['roleName'] : '',
+      authorities: roles,
       token: token
     };
   }
@@ -71,12 +75,12 @@ export class AuthService {
   }
 
   hasRole(role: string): boolean {
-    const user = this.currentUserValue;
-    return !!(user && user.authorities && user.authorities.includes(role));
+    return !!(this.currentUserValue?.authorities.includes(role));
   }
 
   logout(): void {
     localStorage.removeItem('token');
     this.currentUserSubject.next(null);
+    this.router.navigate(['/login']);
   }
 }
