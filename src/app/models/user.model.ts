@@ -5,7 +5,8 @@ export interface Role {
 }
 
 export interface UserDTO {
-  userId?: number; // Optionnel pour la création, présent pour la liste
+  Id?: number; // Optionnel pour la création, présent pour la liste
+  id?: number;
   userName: string;
   email: string;
   firstName: string;

@@ -1,7 +1,12 @@
 <div class="row">
   @for (card of cards; track card) {
     <div class="col-md-6 col-xl-3">
-      <app-card [hidHeader]="true" cardClass="{{ card.background }} order-card">
+      <app-card
+        [hidHeader]="true"
+        cardClass="{{ card.background }} order-card"
+        (click)="navigateTo(card.title)"
+        style="cursor: pointer;">
+
         <h6 class="text-white">{{ card.title }}</h6>
         <h2 class="text-end text-white">
           <i class="feather {{ card.icon }} float-start"></i>
@@ -11,6 +16,7 @@
       </app-card>
     </div>
   }
+</div>
 
 <!-- <div class="col-xl-6 col-md-12">
     <app-card cardTitle="Unique Visitor">

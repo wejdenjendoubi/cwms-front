@@ -7,7 +7,7 @@ import { AuthService } from '../services/auth';
 export class JwtInterceptor implements HttpInterceptor {
   private authService = inject(AuthService);
 
-  // Correction: Utilisation de 'unknown' au lieu de 'any' pour la requête
+  //  Utilisation de 'unknown' au lieu de 'any' pour la requête
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = localStorage.getItem('token');
     const isApiUrl = request.url.startsWith('http://localhost:8080');

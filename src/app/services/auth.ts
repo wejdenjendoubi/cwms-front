@@ -5,7 +5,6 @@ import { tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
 
-// Interfaces pour supprimer le "any"
 export interface UserDTO {
   userName: string;
   authorities: string[];
@@ -30,57 +29,98 @@ export class AuthService {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        this.currentUserSubject.next(this.decodeToken(token));
+        const user = this.decodeToken(token);
+        // Si le token est présent mais vide de rôles, on nettoie immédiatement pour éviter les boucles
+        if (!user.authorities || user.authorities.length === 0) {
+          this.clearStorage();
+        } else {
+          this.currentUserSubject.next(user);
+        }
       } catch {
-        this.logout();
+        this.clearStorage();
       }
     }
   }
 
-  // Suppression du "any" ici (Correction image_2e1dca.png)
   login(credentials: Record<string, string>): Observable<UserDTO> {
+    // Nettoyage préventif avant chaque tentative de connexion
+    this.clearStorage();
+
     return this.http.post<UserDTO>(`${this.API_URL}/signin`, credentials).pipe(
       tap((response) => {
         if (response && response.token) {
           const user = this.decodeToken(response.token);
 
-          // Blocage immédiat si l'utilisateur n'a pas de rôles en base
+          // Blocage si l'utilisateur n'a pas de rôles (cas fréquent des nouveaux comptes)
           if (!user.authorities || user.authorities.length === 0) {
-            this.logout();
-            throw new Error("Compte non autorisé : aucun rôle assigné.");
+            this.clearStorage();
+            throw new Error("NO_ROLES");
           }
 
           localStorage.setItem('token', response.token);
           this.currentUserSubject.next(user);
         }
       }),
-      catchError((err) => throwError(() => err))
+      catchError((err) => {
+        if (err.message === "NO_ROLES") {
+          return throwError(() => ({
+            status: 403,
+            message: "Accès refusé : Aucun rôle n'est associé à ce compte."
+          }));
+        }
+        return throwError(() => err);
+      })
     );
   }
 
   private decodeToken(token: string): UserDTO {
-    // Utilisation de l'interface au lieu de any (Correction image_058af2.png)
-    const decoded = jwtDecode<JwtPayload>(token);
-    const roles = Array.isArray(decoded.authorities) ? decoded.authorities : [];
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      let roles = Array.isArray(decoded.authorities) ? decoded.authorities : [];
 
-    return {
-      userName: decoded.sub || '',
-      authorities: roles,
-      token: token
-    };
+      // Normalisation : assure que tout est en MAJUSCULES et commence par ROLE_
+      roles = roles.map((roleName: string) => {
+      // 1. Mise en majuscules et suppression des espaces inutiles aux extrémités
+      let formatted = roleName.trim().toUpperCase();
+
+  // 2. REMPLACEMENT DES ESPACES PAR DES UNDERSCORES (Correction pour WAREHOUSE WORKER)
+     formatted = formatted.replace(/\s+/g, '_');
+
+  // 3. Ajout du préfixe ROLE_ si manquant
+  return formatted.startsWith('ROLE_') ? formatted : `ROLE_${formatted}`;
+    });
+
+      return {
+        userName: decoded.sub || '',
+        authorities: roles,
+        token: token
+      };
+    } catch {
+      return { userName: '', authorities: [], token: '' };
+    }
   }
 
   public get currentUserValue(): UserDTO | null {
     return this.currentUserSubject.value;
   }
 
+  /**
+   * Vérifie si l'utilisateur possède un rôle spécifique.
+   * La comparaison est insensible à la casse.
+   */
   hasRole(role: string): boolean {
-    return !!(this.currentUserValue?.authorities.includes(role));
+    if (!this.currentUserValue) return false;
+    const targetRole = role.toUpperCase().trim();
+    return this.currentUserValue.authorities.some(a => a === targetRole);
+  }
+
+  public clearStorage(): void {
+    localStorage.removeItem('token');
+    this.currentUserSubject.next(null);
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    this.currentUserSubject.next(null);
+    this.clearStorage();
     this.router.navigate(['/login']);
   }
 }

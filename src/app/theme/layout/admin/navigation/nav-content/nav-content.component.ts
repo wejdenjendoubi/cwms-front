@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { NavigationItem, NavigationItems } from '../navigation';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
 import { NavGroupComponent } from './nav-group/nav-group.component';
+import { AuthService } from 'src/app/services/auth';
 
 @Component({
   selector: 'app-nav-content',
@@ -17,6 +18,7 @@ import { NavGroupComponent } from './nav-group/nav-group.component';
 export class NavContentComponent implements OnInit {
   private location = inject(Location);
   private locationStrategy = inject(LocationStrategy);
+  private authService = inject(AuthService); // <--- Injection du AuthService
 
   // version
   title = 'Demo application for version numbering';
@@ -40,7 +42,10 @@ export class NavContentComponent implements OnInit {
   }
 
   // life cycle event
-  ngOnInit() {
+ ngOnInit() {
+    // Appliquer le filtrage dès le chargement
+    this.filterNavigationByRole();
+
     if (this.windowWidth < 992) {
       setTimeout(() => {
         document.querySelector('.pcoded-navbar')?.classList.add('menupos-static');
@@ -50,6 +55,38 @@ export class NavContentComponent implements OnInit {
         }
       }, 500);
     }
+  }
+  /**
+   * Filtre les menus selon que l'utilisateur est ROLE_ADMIN ou non
+   */
+  filterNavigationByRole() {
+    const isAdmin = this.authService.hasRole('ROLE_ADMIN');
+
+    this.navigation = NavigationItems.map(group => {
+      // On clone le groupe pour ne pas impacter la config globale
+      const filteredGroup = { ...group };
+
+      if (filteredGroup.children) {
+        filteredGroup.children = filteredGroup.children.filter(item => {
+
+          // --- LOGIQUE DE RESTRICTION ---
+
+          // Masquer le dashboard administratif
+          if (item.id === 'dashboard-perso') {
+            return isAdmin;
+          }
+
+          // Masquer la gestion des utilisateurs
+          if (item.id === 'utilisateurs' || item.id === 'user-management') {
+            return isAdmin;
+          }
+
+          // On affiche le reste par défaut
+          return true;
+        });
+      }
+      return filteredGroup;
+    });
   }
 
   fireLeave() {

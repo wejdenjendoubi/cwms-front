@@ -8,6 +8,7 @@ import { UserManagement } from './pages/admin/user-management/user-management';
 
 // ATTENTION : Vérifiez bien si votre fichier s'appelle auth.guard ou auth-guard
 import { AuthGuard } from './guards/auth-guard';
+import { UserDashboard } from './pages/user-dashboard/user-dashboard';
 
 const routes: Routes = [
   {
@@ -25,7 +26,7 @@ const routes: Routes = [
     children: [
       {
         path: 'dashboard-v1',
-        loadComponent: () => import('./pages/dashboard-v1/dashboard-v1').then((c) => c.DashboardV1Component)
+        loadComponent: () => import('./pages/dashboard-v1/dashboard-v1').then((c) => c.DashboardV1)
       },
       {
         path: 'user-management',
@@ -33,6 +34,12 @@ const routes: Routes = [
         // On remet le guard ici pour qu'il lise les "data" (roles)
         canActivate: [AuthGuard],
         data: { roles: ['ROLE_ADMIN'] }
+      },
+      {
+        path: 'user-dashboard',
+        component: UserDashboard,
+        canActivate: [AuthGuard],
+        data: { roles: ['ROLE_USER', 'ROLE_VIEWER', 'ROLE_WAREHOUSE_WORKER'] }
       }
     ]
   },

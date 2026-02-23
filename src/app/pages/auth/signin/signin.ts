@@ -22,7 +22,6 @@ export class SignInComponent {
   showPassword = signal(false);
   isLoading = signal(false);
 
-  // Modèle réaligné sur les attentes du backend
   loginModal = signal({
     username: '',
     password: ''
@@ -36,31 +35,31 @@ export class SignInComponent {
   onSubmit(event: Event) {
     event.preventDefault();
     this.submitted.set(true);
-    this.error.set(''); // Reset de l'erreur précédente
+    this.error.set('');
 
     const data = this.loginModal();
 
-    // On vérifie que les champs ne sont pas vides avant d'envoyer
     if (data.username.trim() !== '' && data.password.trim() !== '') {
       this.isLoading.set(true);
 
-      // Appel au service d'authentification lié au backend
       this.authService.login(data).subscribe({
         next: () => {
-          this.router.navigate(['/dashboard-v1']).then(() => {
-            this.isLoading.set(false);
-          });
+          this.isLoading.set(false);
+          // Redirection selon le rôle
+          if (this.authService.hasRole('ROLE_ADMIN')) {
+            this.router.navigate(['/dashboard-v1']);
+          } else {
+            this.router.navigate(['/user-dashboard']);
+          }
         },
-        error: (err) => {
+        error: (backendError) => { // Renommé 'err' en 'backendError' pour éviter les conflits
           this.isLoading.set(false);
 
-          // Gestion de l'affichage de l'erreur dans l'interface
-          if (err.status === 401 || err.status === 403) {
-            this.error.set('Identifiants invalides ou utilisateur non enregistré.');
-          } else if (err.status === 0) {
-            this.error.set('Impossible de contacter le serveur.');
+          // Utilisation explicite de la variable pour que TypeScript ne la souligne plus
+          if (backendError.status === 401) {
+            this.error.set('Identifiants incorrects.');
           } else {
-            this.error.set(err.message || 'Une erreur est survenue lors de la connexion.');
+            this.error.set('Utilisateur non enregistré ou erreur serveur.');
           }
 
           this.cd.detectChanges();

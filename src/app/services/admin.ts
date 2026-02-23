@@ -20,6 +20,11 @@ export class AdminService {
     return this.http.post<UserDTO>(this.adminUrl, user);
   }
 
+  // Ajout de la mise à jour
+  updateUser(id: number, user: UserDTO): Observable<UserDTO> {
+    return this.http.put<UserDTO>(`${this.adminUrl}/${id}`, user);
+  }
+
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.adminUrl}/${id}`);
   }

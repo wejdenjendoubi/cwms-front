@@ -1,6 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+/// <reference types="jasmine" />
 
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DashboardV1 } from './dashboard-v1';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 describe('DashboardV1', () => {
   let component: DashboardV1;
@@ -8,13 +12,18 @@ describe('DashboardV1', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DashboardV1]
-    })
-    .compileComponents();
+      // On importe le composant et les modules nécessaires aux tests
+      imports: [
+        DashboardV1,
+        HttpClientTestingModule,
+        RouterTestingModule,
+        NgApexchartsModule
+      ]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardV1);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {
